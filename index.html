@@ -22,6 +22,8 @@
   #root {
 	flex: 1;
 	padding: .5rem;
+	display: flex;
+	flex-direction: column;
   }
   
   .tagline {
@@ -31,15 +33,46 @@
 	margin: 0;
 	flex: 1;
   }
+  
+  footer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(#00000000, #000000FF);
+	margin: .5rem -.5rem -.5rem -.5rem;
+	padding: .5rem .5rem 0rem .5rem;
+  }
+  
+  footer > a {
+	text-decoration: none;
+	color: #FFFFFF99;
+	font-weight: bold;
+	font-size: 1.4rem;
+	margin: .5rem 1rem;
+  }
+  
+  #contentContainer {
+	flex: 1;
+  }
   </style>
 </head>
 
 <body>
   <div id="root">
-	<div style="display: flex; flex-direction: row; align-items: center">
-		<h4 class="tagline">jondparadise.github.io</h4>
-		<i class="fab fa-github" style="color: #FFFFFF99;"></i>
-	</div>
+	<main style="flex: 1; display: flex; flex-direction: column">
+		<div style="display: flex; flex-direction: row; align-items: center;">
+			<h4 class="tagline">jondparadise.github.io</h4>
+		</div>
+		<div id="contentContainer">
+		
+		</div>
+	</main>
+	<footer>
+		<a href="#"><i class="fab fa-github"></i></a>
+		<a href="#"><i class="fab fa-youtube"></i></a>
+		<a href="#"><i class="fab fa-reddit"></i></a>
+		<a href="#"><i class="fab fa-facebook"></i></a>
+	</footer>
   </div>
   <script>
   VANTA.NET({
