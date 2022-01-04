@@ -7,11 +7,43 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+  body {
+	display: flex;
+	min-height: 100vh;
+	flex-direction: column;
+	padding: 0;
+	margin: 0;
+	overflow-x: hidden;
+  }
+  
+  #root {
+	flex: 1;
+	padding: .5rem;
+  }
+  
+  .tagline {
+	font-family: Roboto;
+	color: #FFFFFF99;
+	padding: 0;
+	margin: 0;
+	flex: 1;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="root">
+	<div style="display: flex; flex-direction: row; align-items: center">
+		<h4 class="tagline">jondparadise.github.io</h4>
+		<i class="fab fa-github" style="color: #FFFFFF99;"></i>
+	</div>
+  </div>
   <script>
-  var setVanta = ()=>{
-  if (window.VANTA) window.VANTA.GLOBE({
-    el: "root",
+  VANTA.NET({
+    el: '#root',
     mouseControls: true,
     touchControls: true,
     gyroControls: false,
@@ -22,14 +54,7 @@
     size: 1.20,
     backgroundColor: 0x32244d
   });
-  };
-  
-  setVanta();
   </script>
-</head>
-
-<body>
-  <div id="root" style="min-height: 200px; min-width: 200px" />
 </body>
 
 </html>
