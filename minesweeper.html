@@ -1,0 +1,241 @@
+<html>
+
+<head>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #gameContainer {
+            background-color: #111;
+            display: grid;
+            grid-template-rows: repeat(10, 1fr);
+            grid-template-columns: repeat(10, 1fr);
+            border: 1px solid #333;
+        }
+
+        #gameContainer>button {
+            font-size: .6rem;
+            font-weight: bold;
+            cursor: pointer;
+            min-height: 2rem;
+            min-width: 2rem;
+            border: 1px solid #333;
+            border-radius: 0;
+            text-align: center;
+        }
+
+        #gameContainer>button:hover {
+            background-color: #999;
+        }
+
+        .flag {
+            height: 50%;
+            background-color: red;
+            transform: rotate(90deg);
+            margin: 0;
+            padding: 0;
+            clip-path: polygon(50% 0, 0 100%, 100% 100%);
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <p style="max-width: 1280px; margin: 1rem auto; padding: 0;">
+        Left-click to reveal square, right-click to toggle flag. To win you must reveal all squares and flag all bombs.
+    </p>
+    <div id="gameContainer">
+    </div>
+    <script type="text/javascript">
+
+        const rowCount = 20;
+        const columnCount = 20;
+        const difficulty = .1;
+
+        let gameState = [];
+        for (let i = 0; i < (rowCount * columnCount); i++) {
+            gameState.push({
+                y: Math.floor(i / columnCount),
+                x: i % columnCount,
+                state: '',
+                isBomb: false,
+                revealed: false,
+                neighborCount: 0,
+                isFlagged: false,
+                id: 'stateIndex' + i
+            });
+        }
+
+        const setContainerButtons = () => {
+            randomizeBombLocations(gameState);
+            let container = document.getElementById('gameContainer');
+            container.style.gridTemplateRows = 'repeat(' + rowCount + ', 1fr)';
+            container.style.gridTemplateColumns = 'repeat(' + columnCount + ', 1fr)';
+            for (let i = 0; i < gameState.length; i++) {
+                let btn = document.createElement('button');
+                btn.onclick = async (event) => { await gridSquareClick(gameState[i], event.target); };
+                btn.oncontextmenu = async (event) => { event.preventDefault(true); await gridSquareFlagToggle(gameState[i], event.target); };
+                btn.style.gridRow = gameState[i].y + 1;
+                btn.style.gridColumn = gameState[i].x + 1;
+                btn.innerHTML = gameState[i].state;
+                btn.setAttribute("id", gameState[i].id);
+                container.appendChild(btn);
+            }
+        }
+
+        const populateNeighborCount = (square) => {
+            let retVal = 0;
+            retVal += (isSquareBomb(square.x - 1, square.y - 1)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x, square.y - 1)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x + 1, square.y - 1)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x - 1, square.y)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x + 1, square.y)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x - 1, square.y + 1)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x, square.y + 1)) ? 1 : 0;
+            retVal += (isSquareBomb(square.x + 1, square.y + 1)) ? 1 : 0;
+            square.neighborCount = retVal;
+        }
+
+        const isSquareBomb = (x, y) => {
+            if (x < 0 || y < 0 || x > columnCount - 1 || y > rowCount - 1) return false;
+            let index = (y * columnCount) + x;
+            return gameState[index].isBomb;
+        }
+
+        const randomizeBombLocations = (data) => {
+            let expectedBombCount = Math.floor(difficulty * data.length);
+            let actualBombCount = 0;
+            while (actualBombCount < expectedBombCount) {
+                let newRandom = getRandom(data.length);
+                if (!data[newRandom].isBomb) {
+                    data[newRandom].isBomb = true;
+                    actualBombCount++;
+                }
+            }
+
+            for (let i = 0; i < gameState.length; i++) {
+                populateNeighborCount(gameState[i]);
+            }
+        }
+
+        const getRandom = (max) => {
+            return Math.floor(Math.random() * max);
+        }
+
+        const getSquare = (x, y) => {
+            return gameState[(y * columnCount) + x];
+        };
+
+        const gridSquareFlagToggle = async (data, element) => {
+            data.isFlagged = !data.isFlagged;
+            if (data.isFlagged) {
+                let flagDiv = document.createElement('div');
+                flagDiv.classList.add("flag");
+                flagDiv.onclick = () => { gridSquareFlagToggle(data, element); };
+                element.appendChild(flagDiv);
+            }
+            else {
+                while (element.lastChild) {
+                    element.removeChild(element.lastChild);
+                }
+            }
+
+            checkWinCondition();
+        };
+
+        const getElement = (id) => {
+            return document.querySelector('#' + id);
+        }
+
+        const checkWinCondition = () => {
+            let allBombs = gameState.filter(item => item.isBomb);
+            let allMarked = true;
+            for (let i = 0; i < allBombs.length; i++) {
+                if (!allBombs[i].isFlagged) allMarked = false;
+            }
+
+            let allFlags = gameState.filter(item => item.isFlagged);
+            let flagsCorrect = true;
+
+            for (let i = 0; i < allFlags.length; i++) {
+                if (!allFlags[i].isBomb) flagsCorrect = false;
+            }
+
+            if (allMarked && flagsCorrect) {
+                alert('win');
+            }
+        }
+
+        const gridSquareClick = async (data, element) => {
+            if (!data.revealed) {
+                if (data.isBomb) {
+                    element.style.backgroundColor = '#F00';
+                    alert('game over');
+                }
+                else {
+                    if (data.isFlagged) {
+                        gridSquareFlagToggle(data, element);
+                    }
+                    else {
+
+                        if (data.neighborCount > 0) {
+                            element.style.backgroundColor = '#666';
+                            data.revealed = true;
+                            element.innerHTML = data.neighborCount;
+                        }
+                        else {
+                            recurseEmptySquare(data);
+                        }
+
+                    }
+                }
+
+                checkWinCondition();
+            }
+        };
+
+        const recurseEmptySquare = (square) => {
+            if (!square.revealed) {
+                let elem = getElement(square.id);
+                elem.style.backgroundColor = '#666';
+                square.revealed = true;
+                if (square.neighborCount > 0) elem.innerHTML = square.neighborCount;
+
+                if (square.neighborCount == 0) {
+                    //Left
+                    if (square.x > 0 && getSquare(square.x - 1, square.y).neighborCount <= 1) {
+                        recurseEmptySquare(getSquare(square.x - 1, square.y));
+                    }
+
+                    //Right
+                    if (square.x < columnCount - 1 && getSquare(square.x + 1, square.y).neighborCount <= 1) {
+                        recurseEmptySquare(getSquare(square.x + 1, square.y));
+                    }
+
+                    //Up
+                    if (square.y > 0 && getSquare(square.x, square.y - 1).neighborCount <= 1) {
+                        recurseEmptySquare(getSquare(square.x, square.y - 1));
+                    }
+
+                    //Down
+                    if (square.y < rowCount - 1 && getSquare(square.x, square.y + 1).neighborCount <= 1) {
+                        recurseEmptySquare(getSquare(square.x, square.y + 1));
+                    }
+                }
+            }
+        };
+
+        setContainerButtons();
+    </script>
+</body>
+
+</html>
